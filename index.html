@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cleaning Jobs Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Cleaning Jobs — Core Insights</h1>
+        <div id="last-updated"></div>
+    </header>
+
+    <main>
+        <div class="summary-container">
+            <div class="summary-badge">
+                <h4>Total Jobs</h4>
+                <p id="total-jobs">0</p>
+            </div>
+            <div class="summary-badge">
+                <h4>Billable Jobs</h4>
+                <p id="billable-jobs">0</p>
+            </div>
+            <div class="summary-badge">
+                <h4>Total Revenue</h4>
+                <p id="total-revenue">$0</p>
+            </div>
+            <div class="summary-badge">
+                <h4>Total Paid Hours</h4>
+                <p id="total-paid-hours">0</p>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h2>Weekly Revenue</h2>
+            <canvas id="chart-weekly"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Monthly Revenue</h2>
+            <canvas id="chart-monthly"></canvas>
+        </div>
+        <div class="chart-container">
+            <h2>Top Earning Employees</h2>
+            <canvas id="chart-employee-top"></canvas>
+        </div>
+
+        <div class="table-container">
+            <h2>Busiest Days</h2>
+            <table id="table-busiest-days">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Jobs</th>
+                        <th>Revenue</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <div class="table-container">
+            <h2>Most Revenue per Paid Hour</h2>
+            <table id="table-best-hourly">
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Jobs w/ paid hours</th>
+                        <th>Paid Hours</th>
+                        <th>Revenue</th>
+                        <th>$/Paid Hour</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
