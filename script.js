@@ -460,58 +460,84 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderWorkloadHeatmap = (weeklyHours) => {
-        const weeks = Array.from(weeklyHours.keys()).sort();
-        const employees = new Set();
-        
-        // Get unique employees across all weeks
-        weeks.forEach(week => {
-            Array.from(weeklyHours.get(week).keys()).forEach(employee =>
-                employees.add(employee)
-            );
-        });
-
-        const employeeList = Array.from(employees).sort();
-        const data = {
-            labels: weeks.map(w => formatDateAU(new Date(w))),
-            datasets: employeeList.map(employee => ({
-                label: employee,
-                data: weeks.map(week =>
-                    weeklyHours.get(week)?.get(employee) || 0
-                ),
-                backgroundColor: (ctx) => {
-                    const value = ctx.dataset.data[ctx.dataIndex];
-                    const alpha = value === 0 ? 0 : Math.min(0.5 + (value / 40), 1);
-                    return `rgba(54, 162, 235, ${alpha})`;
-                }
-            }))
-        };
-
-        new Chart(document.getElementById('chart-workload-heatmap'), {
-            type: 'bar',
-            data: data,
-            options: {
-                indexAxis: 'y',
-                scales: {
-                    x: {
-                        stacked: true,
-                        title: { display: true, text: 'Total Hours' }
+            const weeks = Array.from(weeklyHours.keys()).sort();
+            const employees = new Set();
+            
+            // Get unique employees across all weeks
+            weeks.forEach(week => {
+                Array.from(weeklyHours.get(week).keys()).forEach(employee =>
+                    employees.add(employee)
+                );
+            });
+    
+            const employeeList = Array.from(employees).sort();
+            const data = {
+                labels: weeks.map(w => formatDateAU(new Date(w))),
+                datasets: employeeList.map(employee => ({
+                    label: employee,
+                    data: weeks.map(week =>
+                        weeklyHours.get(week)?.get(employee) || 0
+                    ),
+                    backgroundColor: (ctx) => {
+                        const value = ctx.dataset.data[ctx.dataIndex];
+                        // Create a color scale from light yellow to dark red based on hours
+                        if (value === 0) return 'rgba(255, 255, 255, 0)';
+                        const intensity = Math.min(value / 40, 1); // Normalize to 0-1 based on max expected hours
+                        const r = Math.floor(255);
+                        const g = Math.floor(255 - (intensity * 150)); // Green from 255 to 105
+                        const b = Math.floor(255 - (intensity * 255)); // Blue from 255 to 0
+                        return `rgba(${r}, ${g}, ${b}, 0.8)`;
                     },
-                    y: {
-                        stacked: true,
-                        title: { display: true, text: 'Week Starting' }
+                    datalabels: {
+                        display: true,
+                        color: 'black',
+                        font: {
+                            weight: 'bold',
+                            size: 10
+                        },
+                        formatter: (value) => value > 0 ? value.toFixed(1) : '',
+                        anchor: 'center',
+                        align: 'center'
                     }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: (ctx) =>
-                                `${ctx.dataset.label}: ${ctx.raw} hours`
+                }))
+            };
+    
+            new Chart(document.getElementById('chart-workload-heatmap'), {
+                type: 'bar',
+                data: data,
+                options: {
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            stacked: true,
+                            title: { display: true, text: 'Total Hours' },
+                            ticks: {
+                                precision: 0
+                            }
+                        },
+                        y: {
+                            stacked: true,
+                            title: { display: true, text: 'Week Starting' }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            callbacks: {
+                                label: (ctx) =>
+                                    `${ctx.dataset.label}: ${ctx.raw} hours`
+                            }
+                        },
+                        legend: {
+                            display: false
+                        },
+                        datalabels: {
+                            display: false // Handled at dataset level
                         }
                     }
-                }
-            }
-        });
-    };
+                },
+                plugins: [ChartDataLabels] // Register the datalabels plugin
+            });
+        };
 const renderBestPerJob = (rows) => {
         const employeeData = {};
         rows.forEach(row => {
