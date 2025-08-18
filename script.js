@@ -388,14 +388,19 @@ renderBestPerJob(data.rows);
     };
 
     const renderBestHourly = (rows) => {
+        // Exclude employees who are not paid by the hour
+        const EXCLUDE_HOURLY = new Set(['Nikitha', 'Oneli', 'Randew', 'Uppal']);
         const employeeData = {};
         rows.forEach(row => {
             if (!row.employees.length) return;
             
             const hasPaidHours = row.paidHours != null;
             const isBillable = row.isBillable;
-
+    
             row.employees.forEach(employee => {
+                // Skip employees who are not paid per hour
+                if (EXCLUDE_HOURLY.has(employee)) return;
+    
                 if (!employeeData[employee]) {
                     employeeData[employee] = { jobsWithPaidHours: 0, paidHours: 0, revenue: 0 };
                 }
@@ -409,7 +414,7 @@ renderBestPerJob(data.rows);
                 }
             });
         });
-
+    
         const hourlyPerformance = Object.entries(employeeData)
             .filter(([, data]) => data.jobsWithPaidHours >= 5)
             .map(([employee, data]) => ({
@@ -419,7 +424,7 @@ renderBestPerJob(data.rows);
             }))
             .sort((a, b) => b.perHour - a.perHour)
             .slice(0, 10);
-
+    
         const tbody = document.querySelector('#table-best-hourly tbody');
         tbody.innerHTML = hourlyPerformance.map(e => `
             <tr>
