@@ -108,45 +108,13 @@ document.addEventListener('DOMContentLoaded', () => {
             let txt = await res.text();
             txt = txt.replace(/^\uFEFF/, '');
 
-            // Preprocess to fix common quote issues
-            txt = txt.replace(/"""/g, '"'); // Fix triple quotes
-            // Fix unescaped quotes within quoted fields
-            txt = txt.replace(/"([^"]*)"/g, (match, content) => {
-                // If content contains unescaped quotes, escape them properly
-                if (content.includes('"')) {
-                    return '"' + content.replace(/"/g, '""') + '"';
-                }
-                return match;
-            });
-            // Handle cases where quotes aren't properly escaped in the CSV
-            const lines = txt.split(/\r?\n/);
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                // Count quotes in the line
-                const quoteCount = (line.match(/"/g) || []).length;
-                // If odd number of quotes, there's likely a quote issue
-                if (quoteCount > 0 && quoteCount % 2 !== 0) {
-                    // Try to fix by escaping internal quotes
-                    lines[i] = line.replace(/"/g, '""').replace(/^""|""$/g, '"');
-                }
-            }
-            txt = lines.join('\n');
+            // Keep CSV as-is; rely on proper CSV escaping in the data itself.
 
             let results = Papa.parse(txt, {
                 header: true,
                 skipEmptyLines: 'greedy',
                 dynamicTyping: false,
-                delimitersToGuess: [",", "\t", ";", "|"],
-                // Handle quote errors more gracefully
-                escapeChar: "\\",
-                // Try to recover from quote errors
-                transform: (value, field) => {
-                    // Clean up any remaining quote issues in individual fields
-                    if (typeof value === 'string') {
-                        return value.replace(/"""/g, '"').trim();
-                    }
-                    return value;
-                }
+                delimitersToGuess: [",", "\t", ";", "|"]
             });
 
             let rows = results.data;
