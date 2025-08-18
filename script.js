@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBestHourly(data.rows);
 renderBestPerJob(data.rows);
         document.getElementById('last-updated').innerText = `Loaded ${parseInfo.count} rows · Detected delimiter: ${parseInfo.delimiter} · Last updated: ${formatDateAU(data.lastUpdated)}`;
+        renderWorkloadHeatmap(weeklyEmployeeHours);
     };
 
     const renderSummaryBadges = (rows) => {
