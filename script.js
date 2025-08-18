@@ -285,13 +285,32 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const renderDashboard = (data) => {
+        // Create weekly employee hours map
+        const weeklyEmployeeHours = new Map();
+        
+        data.rows.forEach(row => {
+            if (!row.paidHours || !row.employees || row.employees.length === 0) return;
+            
+            const monday = getMonday(row.date);
+            const weekKey = monday.toISOString().split('T')[0];
+            
+            if (!weeklyEmployeeHours.has(weekKey)) {
+                weeklyEmployeeHours.set(weekKey, new Map());
+            }
+            
+            const weekData = weeklyEmployeeHours.get(weekKey);
+            row.employees.forEach(employee => {
+                weekData.set(employee, (weekData.get(employee) || 0) + row.paidHours);
+            });
+        });
+
         renderSummaryBadges(data.rows);
         renderWeeklyRevenue(data.rows);
         renderMonthlyRevenue(data.rows);
         renderBusiestDays(data.rows);
         renderTopEmployees(data.rows);
         renderBestHourly(data.rows);
-renderBestPerJob(data.rows);
+        renderBestPerJob(data.rows);
         document.getElementById('last-updated').innerText = `Loaded ${parseInfo.count} rows · Detected delimiter: ${parseInfo.delimiter} · Last updated: ${formatDateAU(data.lastUpdated)}`;
         renderWorkloadHeatmap(weeklyEmployeeHours);
     };
