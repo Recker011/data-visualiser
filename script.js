@@ -108,11 +108,45 @@ document.addEventListener('DOMContentLoaded', () => {
             let txt = await res.text();
             txt = txt.replace(/^\uFEFF/, '');
 
+            // Preprocess to fix common quote issues
+            txt = txt.replace(/"""/g, '"'); // Fix triple quotes
+            // Fix unescaped quotes within quoted fields
+            txt = txt.replace(/"([^"]*)"/g, (match, content) => {
+                // If content contains unescaped quotes, escape them properly
+                if (content.includes('"')) {
+                    return '"' + content.replace(/"/g, '""') + '"';
+                }
+                return match;
+            });
+            // Handle cases where quotes aren't properly escaped in the CSV
+            const lines = txt.split(/\r?\n/);
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i];
+                // Count quotes in the line
+                const quoteCount = (line.match(/"/g) || []).length;
+                // If odd number of quotes, there's likely a quote issue
+                if (quoteCount > 0 && quoteCount % 2 !== 0) {
+                    // Try to fix by escaping internal quotes
+                    lines[i] = line.replace(/"/g, '""').replace(/^""|""$/g, '"');
+                }
+            }
+            txt = lines.join('\n');
+
             let results = Papa.parse(txt, {
                 header: true,
                 skipEmptyLines: 'greedy',
                 dynamicTyping: false,
-                delimitersToGuess: [",", "\t", ";", "|"]
+                delimitersToGuess: [",", "\t", ";", "|"],
+                // Handle quote errors more gracefully
+                escapeChar: "\\",
+                // Try to recover from quote errors
+                transform: (value, field) => {
+                    // Clean up any remaining quote issues in individual fields
+                    if (typeof value === 'string') {
+                        return value.replace(/"""/g, '"').trim();
+                    }
+                    return value;
+                }
             });
 
             let rows = results.data;
@@ -164,13 +198,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (results?.errors && results.errors.length) {
                 console.warn('Papa errors:', results.errors);
-                const errorDetails = results.errors.map(e => `${e.type}: ${e.code} - ${e.message} (row: ${e.row})`).join('; ');
+                // Provide more detailed error information
+                const errorDetails = results.errors.map(e => {
+                    // Try to get the actual line content for context
+                    const lineContent = typeof e.row === 'number' ? txt.split(/\r?\n/)[e.row] : 'unknown';
+                    return `${e.type}: ${e.code} - ${e.message} (row: ${e.row}) - Content: ${lineContent || 'n/a'}`;
+                }).join('; ');
                 showWarn(`Some rows had parse warnings: ${errorDetails}`);
                 
-                // Also log the problematic rows for debugging
+                // Also log the problematic rows for debugging with more context
                 const problematicRows = results.errors.map(e => {
-                    if (typeof e.row === 'number' && results.data[e.row]) {
-                        return `Row ${e.row}: ${JSON.stringify(results.data[e.row])}`;
+                    if (typeof e.row === 'number') {
+                        // Get the actual line content from the original text
+                        const lines = txt.split(/\r?\n/);
+                        const lineContent = lines[e.row] || 'unknown';
+                        if (results.data[e.row]) {
+                            return `Row ${e.row}: ${JSON.stringify(results.data[e.row])} (Original: ${lineContent})`;
+                        } else {
+                            return `Row ${e.row}: (Parse failed) Original content: ${lineContent}`;
+                        }
                     }
                     return null;
                 }).filter(Boolean);
