@@ -238,6 +238,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderBusiestDays(data.rows);
         renderTopEmployees(data.rows);
         renderBestHourly(data.rows);
+renderBestPerJob(data.rows);
         document.getElementById('last-updated').innerText = `Loaded ${parseInfo.count} rows · Detected delimiter: ${parseInfo.delimiter} · Last updated: ${formatDateAU(data.lastUpdated)}`;
     };
 
@@ -374,6 +375,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>${e.paidHours.toFixed(1)}</td>
                 <td>${formatAUD(e.revenue)}</td>
                 <td>${formatAUD(e.perHour)}</td>
+            </tr>
+        `).join('');
+    };
+const renderBestPerJob = (rows) => {
+        const employeeData = {};
+        rows.forEach(row => {
+            if (!row.employees.length) return;
+            
+            // Only consider billable jobs (positive revenue, not cancelled/touch-ups)
+            if (!row.isBillable) return;
+            
+            row.employees.forEach(employee => {
+                if (!employeeData[employee]) {
+                    employeeData[employee] = { paidJobs: 0, revenue: 0 };
+                }
+                
+                // Each employee gets credited with the full revenue of a job they participated in
+                employeeData[employee].paidJobs++;
+                employeeData[employee].revenue += row.value;
+            });
+        });
+        
+        // Calculate revenue per paid job and filter employees with 5+ paid jobs
+        const jobPerformance = Object.entries(employeeData)
+            .filter(([, data]) => data.paidJobs >= 5)
+            .map(([employee, data]) => ({
+                employee,
+                ...data,
+                perJob: data.paidJobs > 0 ? data.revenue / data.paidJobs : 0
+            }))
+            .sort((a, b) => b.perJob - a.perJob);
+        
+        // Render the table
+        const tbody = document.querySelector('#table-best-job tbody');
+        tbody.innerHTML = jobPerformance.map(e => `
+            <tr>
+                <td>${e.employee}</td>
+                <td>${e.paidJobs}</td>
+                <td>${formatAUD(e.revenue)}</td>
+                <td>${formatAUD(e.perJob)}</td>
             </tr>
         `).join('');
     };
