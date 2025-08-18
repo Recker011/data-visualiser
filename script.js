@@ -10,11 +10,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const parsePaidHours = (str) => {
         if (typeof str !== 'string') return null;
-        const matches = str.matchAll(/(\d+(\.\d+)?)\s*H/gi);
+        // Handle various formats of hours
+        const matches = str.matchAll(/(\d+(?:\.\d+)?)\s*(?:H|hours?)/gi);
         let totalHours = 0;
         for (const match of matches) {
             totalHours += parseFloat(match[1]);
         }
+        
+        // If we didn't find any "H" patterns, try to find any number that might represent hours
+        if (totalHours === 0) {
+            // Look for patterns like "4 (Thawishka) 4.5 (Amit)" or just numbers
+            const numberMatches = str.match(/(\d+(?:\.\d+)?)/g);
+            if (numberMatches) {
+                // For complex patterns, we might take the first number or sum all numbers
+                // Let's take the first number as a simple approach
+                if (numberMatches.length > 0) {
+                    totalHours = parseFloat(numberMatches[0]);
+                }
+            }
+        }
+        
         return totalHours > 0 ? totalHours : null;
     };
 
@@ -95,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let results = Papa.parse(txt, {
                 header: true,
-                skipEmptyLines: true,
+                skipEmptyLines: 'greedy',
                 dynamicTyping: false,
                 delimitersToGuess: [",", "\t", ";", "|"]
             });
@@ -133,12 +148,36 @@ document.addEventListener('DOMContentLoaded', () => {
             rows = mapHeadersOnRows(rows);
             parseInfo.count = rows.length;
 
+            // Validate that all rows have the expected fields
+            const expectedFields = ['Date', 'Booking Name', 'Employees', 'Cost', 'Hours Paid Out'];
+            const rowsWithMissingFields = rows.filter(row => {
+                return !expectedFields.every(field => field in row);
+            });
+            
+            if (rowsWithMissingFields.length > 0) {
+                console.warn('Rows with missing fields:', rowsWithMissingFields);
+                showWarn(`Found ${rowsWithMissingFields.length} rows with missing fields. Check console for details.`);
+            }
+
             console.log('CSV rows parsed:', parseInfo.count);
             if (rows[0]) console.log('First row keys:', Object.keys(rows[0]));
 
             if (results?.errors && results.errors.length) {
                 console.warn('Papa errors:', results.errors);
-                showWarn('Some rows had parse warnings; check console for details.');
+                const errorDetails = results.errors.map(e => `${e.type}: ${e.code} - ${e.message} (row: ${e.row})`).join('; ');
+                showWarn(`Some rows had parse warnings: ${errorDetails}`);
+                
+                // Also log the problematic rows for debugging
+                const problematicRows = results.errors.map(e => {
+                    if (typeof e.row === 'number' && results.data[e.row]) {
+                        return `Row ${e.row}: ${JSON.stringify(results.data[e.row])}`;
+                    }
+                    return null;
+                }).filter(Boolean);
+                
+                if (problematicRows.length > 0) {
+                    console.warn('Problematic rows:', problematicRows);
+                }
             }
 
             if (rows.length === 0) {
