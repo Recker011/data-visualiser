@@ -529,13 +529,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         },
                         legend: {
                             display: false
-                        },
-                        datalabels: {
-                            display: false // Handled at dataset level
                         }
                     }
-                },
-                plugins: [ChartDataLabels] // Register the datalabels plugin
+                }
             });
         };
 const renderBestPerJob = (rows) => {
