@@ -388,8 +388,9 @@ renderBestPerJob(data.rows);
     };
 
     const renderBestHourly = (rows) => {
-        // Exclude employees who are not paid by the hour
-        const EXCLUDE_HOURLY = new Set(['Nikitha', 'Oneli', 'Randew', 'Uppal']);
+        // Exclude employees who are not paid by the hour (compare using normalized names)
+        const EXCLUDE_HOURLY = new Set(['nikitha', 'oneli', 'randew', 'uppal']);
+        const normalize = (s) => String(s || '').trim().toLowerCase();
         const employeeData = {};
         rows.forEach(row => {
             if (!row.employees.length) return;
@@ -398,19 +399,20 @@ renderBestPerJob(data.rows);
             const isBillable = row.isBillable;
     
             row.employees.forEach(employee => {
-                // Skip employees who are not paid per hour
-                if (EXCLUDE_HOURLY.has(employee)) return;
+                // Skip employees who are not paid per hour (use normalized comparison)
+                if (EXCLUDE_HOURLY.has(normalize(employee))) return;
     
-                if (!employeeData[employee]) {
-                    employeeData[employee] = { jobsWithPaidHours: 0, paidHours: 0, revenue: 0 };
+                const key = String(employee).trim();
+                if (!employeeData[key]) {
+                    employeeData[key] = { jobsWithPaidHours: 0, paidHours: 0, revenue: 0 };
                 }
                 
                 if (hasPaidHours) {
-                    employeeData[employee].jobsWithPaidHours++;
-                    employeeData[employee].paidHours += row.paidHours;
+                    employeeData[key].jobsWithPaidHours++;
+                    employeeData[key].paidHours += row.paidHours;
                 }
                 if (isBillable) {
-                    employeeData[employee].revenue += row.value;
+                    employeeData[key].revenue += row.value;
                 }
             });
         });
@@ -435,6 +437,60 @@ renderBestPerJob(data.rows);
                 <td>${formatAUD(e.perHour)}</td>
             </tr>
         `).join('');
+    };
+
+    const renderWorkloadHeatmap = (weeklyHours) => {
+        const weeks = Array.from(weeklyHours.keys()).sort();
+        const employees = new Set();
+        
+        // Get unique employees across all weeks
+        weeks.forEach(week => {
+            Array.from(weeklyHours.get(week).keys()).forEach(employee =>
+                employees.add(employee)
+            );
+        });
+
+        const employeeList = Array.from(employees).sort();
+        const data = {
+            labels: weeks.map(w => formatDateAU(new Date(w))),
+            datasets: employeeList.map(employee => ({
+                label: employee,
+                data: weeks.map(week =>
+                    weeklyHours.get(week)?.get(employee) || 0
+                ),
+                backgroundColor: (ctx) => {
+                    const value = ctx.dataset.data[ctx.dataIndex];
+                    const alpha = value === 0 ? 0 : Math.min(0.5 + (value / 40), 1);
+                    return `rgba(54, 162, 235, ${alpha})`;
+                }
+            }))
+        };
+
+        new Chart(document.getElementById('chart-workload-heatmap'), {
+            type: 'bar',
+            data: data,
+            options: {
+                indexAxis: 'y',
+                scales: {
+                    x: {
+                        stacked: true,
+                        title: { display: true, text: 'Total Hours' }
+                    },
+                    y: {
+                        stacked: true,
+                        title: { display: true, text: 'Week Starting' }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: (ctx) =>
+                                `${ctx.dataset.label}: ${ctx.raw} hours`
+                        }
+                    }
+                }
+            }
+        });
     };
 const renderBestPerJob = (rows) => {
         const employeeData = {};
