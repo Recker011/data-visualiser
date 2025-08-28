@@ -267,6 +267,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 lastUpdated = date;
             }
 
+            const subcontractorPayout = employees.includes('Uppal/Dhruv') ? valueNumber * 0.5 : 0;
+
             return {
                 date,
                 dateKey: `${year}-${month}-${day}`,
@@ -277,7 +279,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 isCancelled,
                 isTouchUp,
                 hasGST,
-                isBillable
+                isBillable,
+                subcontractorPayout
             };
         }).filter(Boolean);
 
@@ -388,7 +391,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderTopEmployees = (rows) => {
         const employeeRevenue = rows.filter(r => r.isBillable).reduce((acc, row) => {
             row.employees.forEach(employee => {
-                acc[employee] = (acc[employee] || 0) + row.value;
+                const revenueToAdd = (employee === 'Uppal/Dhruv' && row.subcontractorPayout > 0) ? row.subcontractorPayout : row.value;
+                acc[employee] = (acc[employee] || 0) + revenueToAdd;
             });
             return acc;
         }, {});
@@ -547,9 +551,10 @@ const renderBestPerJob = (rows) => {
                     employeeData[employee] = { paidJobs: 0, revenue: 0 };
                 }
                 
-                // Each employee gets credited with the full revenue of a job they participated in
+                const revenueToAdd = (employee === 'Uppal/Dhruv' && row.subcontractorPayout > 0) ? row.subcontractorPayout : row.value;
+                
                 employeeData[employee].paidJobs++;
-                employeeData[employee].revenue += row.value;
+                employeeData[employee].revenue += revenueToAdd;
             });
         });
         
