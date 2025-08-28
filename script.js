@@ -1,6 +1,28 @@
 document.addEventListener('DOMContentLoaded', () => {
     const timeZone = 'Australia/Melbourne';
 
+    // Login Logic
+    const loginContainer = document.getElementById('login-container');
+    const mainContent = document.getElementById('main-content');
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    const loginButton = document.getElementById('login-button');
+    const loginError = document.getElementById('login-error');
+
+    loginButton.addEventListener('click', () => {
+        const username = usernameInput.value;
+        const password = passwordInput.value;
+
+        if (username === 'Guri' && password === 'guridashboard') {
+            loginContainer.style.display = 'none';
+            mainContent.style.display = 'block';
+            loginError.style.display = 'none';
+        } else {
+            loginError.textContent = 'Invalid username or password.';
+            loginError.style.display = 'block';
+        }
+    });
+
     // Utility Functions
     const parseMoney = (str) => {
         if (typeof str !== 'string' || str.toLowerCase() === 'n/a') return 0;

@@ -7,12 +7,21 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <h1>Cleaning Jobs — Core Insights</h1>
-        <div id="last-updated"></div>
-    </header>
+    <div id="login-container">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button id="login-button">Login</button>
+        <p id="login-error" style="color: red; display: none;"></p>
+    </div>
 
-    <main>
+    <div id="main-content" style="display: none;">
+        <header>
+            <h1>Cleaning Jobs — Core Insights</h1>
+            <div id="last-updated"></div>
+        </header>
+
+        <main>
         <div class="summary-container">
             <div class="summary-badge">
                 <h4>Total Jobs</h4>
@@ -93,6 +102,7 @@
             </table>
         </div>
     </main>
+    </div> <!-- Close main-content -->
 
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <script>
