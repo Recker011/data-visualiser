@@ -290,6 +290,28 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const subcontractorPayout = employees.includes('Uppal/Dhruv') ? valueNumber * 0.5 : 0;
+            
+            const employeePayouts = {};
+            const fixedRateEmployees = ['Randew', 'Nikitha', 'Oneli'];
+            const presentFixedRateEmployees = employees.filter(emp => fixedRateEmployees.includes(emp));
+            const numFixedRateEmployees = presentFixedRateEmployees.length;
+
+            if (numFixedRateEmployees === 1) {
+                employeePayouts[presentFixedRateEmployees[0]] = valueNumber * 0.5;
+            } else if (numFixedRateEmployees >= 2) {
+                presentFixedRateEmployees.forEach(emp => {
+                    employeePayouts[emp] = valueNumber * 0.25;
+                });
+            }
+
+            // For other employees (not fixed-rate, not Uppal/Dhruv), their payout is the full job value
+            employees.forEach(employee => {
+                if (employee === 'Uppal/Dhruv') {
+                    employeePayouts[employee] = subcontractorPayout;
+                } else if (!fixedRateEmployees.includes(employee) && !employeePayouts[employee]) {
+                    employeePayouts[employee] = valueNumber;
+                }
+            });
 
             return {
                 date,
@@ -302,7 +324,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 isTouchUp,
                 hasGST,
                 isBillable,
-                subcontractorPayout
+                subcontractorPayout, // Keep for backward compatibility if needed
+                employeePayouts // New field for detailed payouts
             };
         }).filter(Boolean);
 
@@ -314,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const weeklyEmployeeHours = new Map();
         
         data.rows.forEach(row => {
-            if (!row.paidHours || !row.employees || row.employees.length === 0) return;
+            if (!row.employees || row.employees.length === 0) return;
             
             const monday = getMonday(row.date);
             const weekKey = monday.toISOString().split('T')[0];
@@ -325,7 +348,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const weekData = weeklyEmployeeHours.get(weekKey);
             row.employees.forEach(employee => {
-                weekData.set(employee, (weekData.get(employee) || 0) + row.paidHours);
+                const isSpecialEmployee = ['Randew', 'Nikitha', 'Oneli'].includes(employee);
+                const valueToAdd = isSpecialEmployee ? 1 : (row.paidHours || 0); // 1 job or paid hours
+
+                if (valueToAdd > 0) { // Only add if there's a value to add
+                    weekData.set(employee, (weekData.get(employee) || 0) + valueToAdd);
+                }
             });
         });
 
@@ -413,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const renderTopEmployees = (rows) => {
         const employeeRevenue = rows.filter(r => r.isBillable).reduce((acc, row) => {
             row.employees.forEach(employee => {
-                const revenueToAdd = (employee === 'Uppal/Dhruv' && row.subcontractorPayout > 0) ? row.subcontractorPayout : row.value;
+                const revenueToAdd = row.employeePayouts[employee] || 0; // Use the pre-calculated payout
                 acc[employee] = (acc[employee] || 0) + revenueToAdd;
             });
             return acc;
@@ -573,7 +601,7 @@ const renderBestPerJob = (rows) => {
                     employeeData[employee] = { paidJobs: 0, revenue: 0 };
                 }
                 
-                const revenueToAdd = (employee === 'Uppal/Dhruv' && row.subcontractorPayout > 0) ? row.subcontractorPayout : row.value;
+                const revenueToAdd = row.employeePayouts[employee] || 0; // Use the pre-calculated payout
                 
                 employeeData[employee].paidJobs++;
                 employeeData[employee].revenue += revenueToAdd;
