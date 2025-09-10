@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // Register the datalabels plugin once Chart and the plugin are available
+    if (window.Chart && window.ChartDataLabels && typeof Chart.register === 'function') {
+        Chart.register(window.ChartDataLabels);
+    }
     const timeZone = 'Australia/Melbourne';
 
     // Login Logic
@@ -173,7 +177,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parseInfo.count = rows.length;
 
             // Validate that all rows have the expected fields
-            const expectedFields = ['Date', 'Booking Name', 'Employees', 'Cost', 'Hours Paid Out', 'Notes'];
+            const expectedFields = ['Date', 'Booking Name', 'Employees', 'Cost', 'Hours Paid Out'];
             const rowsWithMissingFields = rows.filter(row => {
                 return !expectedFields.every(field => field in row);
             });
