@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
             parseInfo.count = rows.length;
 
             // Validate that all rows have the expected fields
-            const expectedFields = ['Date', 'Booking Name', 'Employees', 'Cost', 'Hours Paid Out'];
+            const expectedFields = ['Date', 'Booking Name', 'Employees', 'Cost', 'Hours Paid Out', 'Notes'];
             const rowsWithMissingFields = rows.filter(row => {
                 return !expectedFields.every(field => field in row);
             });

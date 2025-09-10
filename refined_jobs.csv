@@ -1,4 +1,4 @@
-Date,Booking Name,Employees,Cost,Hours Paid Out
+Date,Booking Name,Employees,Cost,Hours Paid Out,Notes
 07/05/2025,Bala,"Randew, Oneli",$792,
 10/05/2025,Subramaniam,"Nikitha, Oneli",$702,
 12/05/2025,Cat,"Nikitha, Uppal",$534,
@@ -118,6 +118,7 @@ Date,Booking Name,Employees,Cost,Hours Paid Out
 11/08/2025,Vanessa,Oneli,$150 + GST,
 12/08/2025,Will Richards,Navidu,$360 + GST,5 H
 12/08/2025,Josh Zielinski,Oshadi,$360 + GST,6 H
+"Ellie"" Elisea Downs",Oneli,$550 + GST,
 12/08/2025,"""Ellie"" Elisea Downs",Oneli,$550 + GST,
 13/08/2025,Tegan Fairley Tchup,Navidu,n/a,5 H
 14/08/2025,Amara Vanek,"Oshadi, Oneli",$520 + GST,4 H
@@ -139,3 +140,39 @@ Date,Booking Name,Employees,Cost,Hours Paid Out
 24/08/2025,Kimiyo Davis,Uppal/Dhruv,$420 + GST,
 24/08/2025,Xavier,Uppal/Dhruv,$450 + GST,
 24/08/2025,Melinda Baarini,"Randew, Nikitha",$540 + GST,
+26/08/2025,Martin De Jonge,"Dhruv/Uppal","$600 + GST",,
+26/08/2025,Susan Hopkins,Oshadi,"$500 + GST",4 H,
+26/08/2025,Amy Veale,"Oshadi, Navidu","$600 + GST",4.5 H,
+27/08/2025,Ash,"Oneli, Oshadi","$650 + GST",5 H,
+27/08/2025,Steve,Navidu,"$640 + GST",10 H,
+27/08/2025,Daniel Kaplan Touch Up,Shem,n/a,5 H,
+28/08/2025,Carly,"Navidu, Nirmal","$580 + GST",4.5 H,
+28/08/2025,Yannick,"Oneli, Fardin","$650 + GST",5 H,
+28/08/2025,Susan Hopkins Steam Cleaning,Navidu,"$150 + GST",4 H,
+28/08/2025,Rebecca,"Dhruv/Uppal","$585 + GST",,
+29/08/2025,Ved Steam Cleaning,Shem,"$240 + GST",4 H,
+29/08/2025,Jackie Boggie,"Navidu, Nirmal","$450 + GST","6 H(Navidu), 4 H(Nirmal)",
+29/08/2025,Jacqui Henshaw (Cancelled),Shem,"$360 + GST",6 H,Cancelled
+30/08/2025,Chloe,Nirmal,"$320 + GST",5 H,
+30/08/2025,Reina Dichoso,Navidu,"$540 + GST",8.5 H,
+30/08/2025,Shaun and Natasha,"Dhruv/Uppal","$550 + GST",,
+31/08/2025,Laura Williams,Navidu,"$480 + GST",6 H,
+31/08/2025,Mia,Nirmal,"$460 + GST",7 H,
+31/08/2025,Kanishka,"Nikitha, Randew","$540 + GST",,"$69 extra for step ladder"
+31/08/2025,Clinton Ruddick,Uppal,"$420 + GST",,
+01/09/2025,Simranjeet,Navidu,"$700 + GST",7 H,
+01/09/2025,Tara Devink,Nikitha,"$250 + GST",,
+01/09/2025,Zoe,"Dhruv/Uppal","$730 + GST",,
+02/09/2025,Carmen Puskas,"Navidu, Fardin","$640 + GST","5 H(Fardin), 5.5H (navidu)",
+02/09/2025,Zelda and Angela Rosewarne,"Oshadi, Nirmal","$485 + GST",3.5 H,
+03/09/2025,Kylie Kummerlowe,Linuka,"$540 + GST",10 H,
+03/09/2025,Jay Chuang,Nirmal,"$350 + GST",6 H,
+03/09/2025,Reina Dichoso tchup,Navidu,"$142.5",4 H,
+04/09/2025,Jesusette,Nirmal,"$420 + GST",7 H,"$20.49 parking"
+04/09/2025,Jennifer F Blair,"Shem, Adithya","$680 + GST",6 H,
+04/09/2025,Teagan Shepherd,Fardin,"$460 + GST",9 H,
+05/09/2025,Tom,Navidu,"$430 + GST",6.5 H,
+07/09/2025,Tarsem,"Adithya, Nirmal","$520 + GST",5 H,
+07/09/2025,Eliza Buchanan,Nirmal,"$400 + GST",5.5 H,
+07/09/2025,Helena Sanderson,"Navidu, Sujaith","$570 + GST",5.5 H,
+07/09/2025,Masoumeh Nazari,Adithya,"$200 + GST",4 H,
