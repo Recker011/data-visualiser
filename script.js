@@ -134,18 +134,18 @@ document.addEventListener('DOMContentLoaded', () => {
             let txt = await res.text();
             txt = txt.replace(/^\uFEFF/, '');
 
-            // Keep CSV as-is; rely on proper CSV escaping in the data itself.
-
+            // First pass: parse with header to detect delimiter and quick success path
             let results = Papa.parse(txt, {
                 header: true,
                 skipEmptyLines: 'greedy',
                 dynamicTyping: false,
                 delimitersToGuess: [",", "\t", ";", "|"]
             });
-
+ 
             let rows = results.data;
             parseInfo.delimiter = results?.meta?.delimiter || parseInfo.delimiter;
-
+ 
+            // If no rows, try a hard tab parse
             if (rows.length === 0) {
                 const firstLine = txt.split(/\r?\n/)[0] || '';
                 if (firstLine.includes('\t')) {
@@ -154,23 +154,50 @@ document.addEventListener('DOMContentLoaded', () => {
                     parseInfo.delimiter = '\\t';
                 }
             }
-
-            if (rows.length === 0) {
-                // headerless fallback: build objects using first non-empty row as keys
-                const res2 = Papa.parse(txt, { header: false, skipEmptyLines: true });
-                const arrays = res2.data;
-                let headerRow = arrays.find(r => Array.isArray(r) && r.some(c => String(c || '').trim().length > 0)) || [];
-                headerRow = headerRow.map(h => String(h || '').trim());
-                const body = arrays.slice(arrays.indexOf(headerRow) + 1);
-                rows = body
-                    .filter(r => Array.isArray(r) && r.some(c => String(c || '').trim().length > 0))
-                    .map(r => {
-                        const obj = {};
-                        headerRow.forEach((h, i) => { obj[h] = r[i]; });
-                        return obj;
-                    });
+ 
+            // If we encountered frequent FieldMismatch: TooFewFields (e.g., header has "Notes" but rows don't),
+            // re-parse as arrays and rebuild objects using the dominant column count.
+            const needsReparse = (() => {
+                if (!results || !Array.isArray(results.errors)) return false;
+                const mismatches = results.errors.filter(e => e?.type === 'FieldMismatch' && e?.code === 'TooFewFields');
+                return mismatches.length >= 1;
+            })();
+ 
+            if (needsReparse) {
+                const res2 = Papa.parse(txt, {
+                    header: false,
+                    skipEmptyLines: 'greedy',
+                    dynamicTyping: false,
+                    delimitersToGuess: [",", "\t", ";", "|"]
+                });
+ 
+                const arrays = res2.data
+                    .filter(r => Array.isArray(r) && r.some(c => String(c || '').trim().length > 0));
+ 
+                let headerRow = arrays[0] ? arrays[0].map(h => String(h ?? '').trim()) : [];
+                const bodyRows = arrays.slice(1);
+ 
+                // Determine dominant column count across body rows (robust to an extra trailing header like "Notes")
+                const counts = {};
+                bodyRows.forEach(r => { const len = r.length; counts[len] = (counts[len] || 0) + 1; });
+                const sortedByFreq = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+                const dominantLen = sortedByFreq.length ? parseInt(sortedByFreq[0][0], 10) : (headerRow.length || 0);
+ 
+                // Trim header if it has extra trailing columns beyond dominant (drops trailing 'Notes' cleanly)
+                if (headerRow.length > dominantLen) headerRow = headerRow.slice(0, dominantLen);
+                // Pad generic names if header is shorter than dominant
+                while (headerRow.length < dominantLen) headerRow.push('Col' + (headerRow.length + 1));
+ 
+                rows = bodyRows.map(r => {
+                    const rowArr = r.slice(0, dominantLen);
+                    while (rowArr.length < dominantLen) rowArr.push('');
+                    const obj = {};
+                    headerRow.forEach((h, i) => { obj[h] = rowArr[i]; });
+                    return obj;
+                });
+ 
                 parseInfo.delimiter = res2?.meta?.delimiter || parseInfo.delimiter;
-                results = res2;
+                results = res2; // replace so downstream error handling reflects the new parse
             }
 
             rows = mapHeadersOnRows(rows);
