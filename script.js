@@ -403,11 +403,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const billableJobs = rows.filter(r => r.isBillable);
         const totalRevenue = billableJobs.reduce((sum, r) => sum + r.value, 0);
         const totalPaidHours = rows.reduce((sum, r) => sum + (r.paidHours || 0), 0);
+        const averageRevenuePerJob = rows.length > 0 ? totalRevenue / rows.length : 0;
 
         document.getElementById('total-jobs').innerText = rows.length;
         document.getElementById('billable-jobs').innerText = billableJobs.length;
         document.getElementById('total-revenue').innerText = formatAUD(totalRevenue);
         document.getElementById('total-paid-hours').innerText = totalPaidHours.toFixed(1);
+        document.getElementById('average-revenue-per-job').innerText = formatAUD(averageRevenuePerJob);
     };
 
     const renderWeeklyRevenue = (rows) => {
